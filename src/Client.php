@@ -109,28 +109,11 @@ class Client
             
             $this->token = new Token($token);
             
-        } catch (GuzzleRequestException $requestException) {
+        } catch (GuzzleRequestException $guzzleRequestException) {
             
-            if ($requestException->hasResponse()) {
-                
-                $exception = json_decode($requestException->getResponse()->getBody()->getContents(), true);
-                
-                if (isset($exception['message']) and isset($exception['code'])) {
-                    
-                    throw new AuthenticationException($exception['message'], $exception['code'], $requestException);
-                    
-                } if (isset($exception['error']) and isset($exception['error_description'])) {
-                    
-                    throw new AuthenticationException(implode(', ', [$exception['error'], $exception['error_description']]), $requestException->getCode(), $requestException);
-                    
-                } else {
-                    
-                    throw new AuthenticationException($requestException->getMessage(), $requestException->getCode(), $requestException);
-                    
-                }
-            }
-            
-            throw new AuthenticationException($requestException->getMessage(), $requestException->getCode(), $requestException);
+            $this->handleGuzzleRequestException($guzzleRequestException, function($message, $code, $previousException) {
+                throw new AuthenticationException($message, $code, $previousException);
+            });
             
         }
     }
@@ -173,30 +156,50 @@ class Client
             
             return json_decode($contents, true);
             
-        } catch (GuzzleRequestException $requestException) {
+        } catch (GuzzleRequestException $guzzleRequestException) {
             
-            if ($requestException->hasResponse()) {
-                
-                $exception = json_decode($requestException->getResponse()->getBody()->getContents(), true);
-                
-                if (isset($exception['message']) and isset($exception['code'])) {
-                    
-                    throw new RequestException($exception['message'], $exception['code'], $requestException);
-                    
-                } if (isset($exception['error']) and isset($exception['error_description'])) {
-                    
-                    throw new RequestException(implode(', ', [$exception['error'], $exception['error_description']]), $requestException->getCode(), $requestException);
-                    
-                } else {
-                    
-                    throw new RequestException($requestException->getMessage(), $requestException->getCode(), $requestException);
-                    
-                }
-            }
-            
-            throw new RequestException($requestException->getMessage(), $requestException->getCode(), $requestException);
+            $this->handleGuzzleRequestException($guzzleRequestException, function($message, $code, $previousException) {
+                throw new RequestException($message, $code, $previousException);
+            });
             
         }
+    }
+    
+    /**
+     * @param GuzzleRequestException $guzzleRequestException
+     * @param callable $callback
+     */
+    private function handleGuzzleRequestException(GuzzleRequestException $guzzleRequestException, callable $callback)
+    {
+        if ($guzzleRequestException->hasResponse()) {
+            
+            $exception = json_decode($guzzleRequestException->getResponse()->getBody()->getContents(), true);
+            
+            if (isset($exception['message']) and isset($exception['code'])) {
+                
+                $message = $exception['message'];
+                $code = $exception['code'];
+                
+            } elseif (isset($exception['error']) and isset($exception['error_description'])) {
+                
+                $message = implode(', ', [$exception['error'], $exception['error_description']]);
+                $code = $guzzleRequestException->getCode();
+                
+            } else {
+                
+                $message = $guzzleRequestException->getMessage();
+                $code = $guzzleRequestException->getCode();
+                
+            }
+            
+        } else {
+            
+            $message = $guzzleRequestException->getMessage();
+            $code = $guzzleRequestException->getCode();
+            
+        }
+        
+        $callback($message, $code, $guzzleRequestException);
     }
     
     /**
