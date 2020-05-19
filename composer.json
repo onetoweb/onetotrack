@@ -1,0 +1,29 @@
+{
+    "name": "onetoweb/onetotrack",
+    "description": "Onetotrack API Client",
+    "keywords": [
+        "api",
+        "php",
+        "onetotrack"
+    ],
+    "type": "library",
+    "homepage": "https://github.com/onetoweb/onetotrack",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Jonathan van 't Ende",
+            "email": "jvantende@onetoweb.nl"
+        }
+    ],
+    "require": {
+        "php": ">=7.1.0",
+        "guzzlehttp/guzzle": "^6.5"
+    },
+    "require-dev": {
+    },
+    "autoload": {
+        "psr-4": {
+            "Onetoweb\\Onetotrack\\": "src/"
+        }
+    }
+}
