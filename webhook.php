@@ -10,6 +10,7 @@ $apiSecret = 'api_secret';
 
 // example handling webhooks using the symfony http kernel
 // https://symfony.com/doc/current/components/http_kernel.html
+// requires symfony http kernel: (composer require symfony/http-kernel)
 
 $request = Request::createFromGlobals();
 if(Authentication::authenticate($request->getContent(),  $apiSecret)) {

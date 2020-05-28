@@ -13,3 +13,7 @@ composer require onetoweb/onetotrack
 ## Usage
 
 See example.php
+
+## Authenticating webhooks
+
+See webhook.php
