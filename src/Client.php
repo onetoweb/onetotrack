@@ -5,8 +5,7 @@ namespace Onetoweb\Onetotrack;
 use GuzzleHttp\Client as GuzzleClient;
 use GuzzleHttp\RequestOptions;
 use GuzzleHttp\Exception\RequestException as GuzzleRequestException;
-use Onetoweb\Onetotrack\Exception\AuthenticationException;
-use Onetoweb\Onetotrack\Exception\RequestException;
+use Onetoweb\Onetotrack\Exception\{AuthenticationException, RequestException, AccountIdNotSetException};
 
 /**
  * Onetotrack api Client
@@ -50,6 +49,11 @@ class Client
     private $client;
     
     /**
+     * @var string
+     */
+    private $accountId;
+    
+    /**
      * @param string $username
      * @param string $password
      * @param string $apiKey
@@ -75,6 +79,35 @@ class Client
     public function getToken()
     {
         return $this->token;
+    }
+    
+    /**
+     * @param string $accountId
+     */
+    public function setAccountId(string $accountId)
+    {
+        $this->accountId = $accountId;
+    }
+    
+    /**
+     * @throws AccountIdNotSetException if account id is not set 
+     * 
+     * @return string
+     */
+    private function getAccountId() : string
+    {
+        $trace = debug_backtrace();
+        
+        if ($this->accountId == null) {
+            
+            if(isset($trace[1]['function'])) {
+                throw new AccountIdNotSetException("{$trace[1]['function']} requires account id to be set");
+            } else {
+                throw new AccountIdNotSetException('account id is not set');
+            }
+        }
+        
+        return $this->accountId;
     }
     
     /**
@@ -166,6 +199,8 @@ class Client
     }
     
     /**
+     * Handle GuzzleRequestException
+     * 
      * @param GuzzleRequestException $guzzleRequestException
      * @param callable $callback
      */
@@ -253,6 +288,36 @@ class Client
     }
     
     /**
+     * Get accounts
+     *
+     * @return array
+     */
+    public function getAccounts()
+    {
+        return $this->get('api/account');
+    }
+    
+    /**
+     * Create account
+     *
+     * @return array
+     */
+    public function createAccount(array $data)
+    {
+        return $this->post('api/account', $data);
+    }
+    
+    /**
+     * Delete account
+     *
+     * @return array
+     */
+    public function deleteAccount(string $id)
+    {
+        return $this->delete("api/account/$id");
+    }
+    
+    /**
      * Get providers
      * 
      * @return array
@@ -269,7 +334,9 @@ class Client
      */
     public function getProviderCredentials()
     {
-        return $this->get('api/provider/credential');
+        $accountId = $this->getAccountId();
+        
+        return $this->get("api/account/$accountId/provider/credential");
     }
     
     
@@ -282,7 +349,9 @@ class Client
      */
     public function createProviderCredential(array $data)
     {
-        return $this->post('api/provider/credential', $data);
+        $accountId = $this->getAccountId();
+        
+        return $this->post("api/account/$accountId/provider/credential", $data);
     }
     
     /**
@@ -294,17 +363,23 @@ class Client
      */
     public function deleteProviderCredential(string $id)
     {
-        return $this->delete("api/provider/credential/$id");
+        $accountId = $this->getAccountId();
+        
+        return $this->delete("api/account/$accountId/provider/credential/$id");
     }
     
     /**
      * Get parcels
      * 
+     * @param string $accountId
+     * 
      * @return array
      */
     public function getParcels()
     {
-        return $this->get('api/parcel');
+        $accountId = $this->getAccountId();
+        
+        return $this->get("api/account/$accountId/parcel");
     }
     
     /**
@@ -316,7 +391,9 @@ class Client
      */
     public function getParcel(string $id)
     {
-        return $this->get("api/parcel/$id");
+        $accountId = $this->getAccountId();
+        
+        return $this->get("api/account/$accountId/parcel/$id");
     }
     
     /**
@@ -328,7 +405,9 @@ class Client
      */
     public function createParcel(array $data)
     {
-        return $this->post('api/parcel', $data);
+        $accountId = $this->getAccountId();
+        
+        return $this->post("api/account/$accountId/parcel", $data);
     }
     
     /**
@@ -340,7 +419,9 @@ class Client
      */
     public function deleteParcel(string $id)
     {
-        return $this->delete("api/parcel/$id");
+        $accountId = $this->getAccountId();
+        
+        return $this->delete("api/account/$accountId/parcel/$id");
     }
     
     /**
@@ -360,7 +441,9 @@ class Client
      */
     public function getWebhooks()
     {
-        return $this->get('api/webhook');
+        $accountId = $this->getAccountId();
+        
+        return $this->get("api/account/$accountId/webhook");
     }
     
     /**
@@ -372,7 +455,9 @@ class Client
      */
     public function createWebhook(array $data)
     {
-        return $this->post('api/webhook', $data);
+        $accountId = $this->getAccountId();
+        
+        return $this->post("api/account/$accountId/webhook", $data);
     }
     
     /**
@@ -384,6 +469,8 @@ class Client
      */
     public function deleteWebhook(string $id)
     {
-        return $this->delete("api/webhook/$id");
+        $accountId = $this->getAccountId();
+        
+        return $this->delete("api/account/$accountId/webhook/$id");
     }
 }

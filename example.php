@@ -11,6 +11,17 @@ $apiSecret = 'api_secret';
 
 $client = new Client($username, $password, $apiKey, $apiSecret);
 
+// create account
+$account = $client->createAccount([
+    'name' => 'account name'
+]);
+
+// set account id (required for all parcel, provider​/credential & webhook calls)
+$client->setAccountId($account['id']);
+
+// get accounts
+$accounts = $client->getAccounts();
+
 // get providers
 $providers = $client->getProviders();
 $provider = $providers[0];
@@ -38,12 +49,6 @@ $parcel = $client->getParcel($parcel['id']);
 // get parcels
 $parcels = $client->getParcels();
 
-// delete parcel
-$client->deleteParcel($parcel['id']);
-
-// delete provider credential
-$client->deleteProviderCredential($providerCredential['id']);
-
 // get webhook events
 $webhookEvents = $client->getWebhookEvents();
 
@@ -56,5 +61,14 @@ $webhook = $client->createWebhook([
 // get webhooks
 $webhooks = $client->getWebhooks();
 
+// delete account
+// $this->deleteAccount($account['id']);
+
+// delete parcel
+// $client->deleteParcel($parcel['id']);
+
+// delete provider credential
+// $client->deleteProviderCredential($providerCredential['id']);
+
 // delete webhook
-$client->deleteWebhook($webhook['id']);
+// $client->deleteWebhook($webhook['id']);
