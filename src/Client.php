@@ -156,13 +156,14 @@ class Client
      *
      * @param string $method = 'GET'
      * @param string $endpoint
-     * @param array $data = null (optional)
+     * @param array $data = [] (optional)
+     * @param array $query = [] (optional)
      *
      * @throws RequestException
      *
      * @return array
      */
-    private function request(string $method = 'GET', string $endpoint, array $data = null)
+    private function request(string $method = 'GET', string $endpoint, array $data = null, array $query = [])
     {
         if ($this->getToken() == null or $this->getToken()->hasExpired()) {
             $this->getAccessToken();
@@ -179,8 +180,12 @@ class Client
                 ],
             ];
             
-            if(in_array($method, ['POST', 'PUT'])) {
+            if(in_array($method, ['POST', 'PUT', 'PATCH']) and count($data) > 0) {
                 $options[RequestOptions::JSON] = $data;
+            }
+            
+            if (count($query) > 0) {
+                $endpoint .= '?'.http_build_query($query);
             }
             
             $result = $this->client->request($method, $endpoint, $options);
@@ -241,12 +246,13 @@ class Client
      * Send a GET request
      *
      * @param string $endpoint
+     * @param array $data = []
      *
      * @return array
      */
-    private function get($endpoint)
+    public function get(string $endpoint, array $query = [])
     {
-        return $this->request('GET', $endpoint);
+        return $this->request('GET', $endpoint, [], $query);
     }
     
     /**
@@ -257,9 +263,9 @@ class Client
      *
      * @return array
      */
-    private function post($endpoint, $data)
+    public function post(string $endpoint, array $data, array $query = [])
     {
-        return $this->request('POST', $endpoint, $data);
+        return $this->request('POST', $endpoint, $data, $query);
     }
     
     /**
@@ -270,9 +276,9 @@ class Client
      *
      * @return array
      */
-    private function put($endpoint, $data)
+    public function put(string $endpoint, array $data, array $query = [])
     {
-        return $this->request('PUT', $endpoint, $data);
+        return $this->request('PUT', $endpoint, $data, $query);
     }
     
     /**
@@ -282,9 +288,9 @@ class Client
      *
      * @return array
      */
-    private function delete($endpoint)
+    public function delete(string $endpoint, array $query = [])
     {
-        return $this->request('DELETE', $endpoint);
+        return $this->request('DELETE', $endpoint, [], $query);
     }
     
     /**
@@ -371,15 +377,15 @@ class Client
     /**
      * Get parcels
      * 
-     * @param string $accountId
+     * @param array $query = [] (optional)
      * 
      * @return array
      */
-    public function getParcels()
+    public function getParcels(array $query = [])
     {
         $accountId = $this->getAccountId();
         
-        return $this->get("api/account/$accountId/parcel");
+        return $this->get("api/account/$accountId/parcel", $query);
     }
     
     /**

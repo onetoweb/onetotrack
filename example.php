@@ -46,8 +46,10 @@ $parcel = $client->createParcel([
 // get parcel
 $parcel = $client->getParcel($parcel['id']);
 
-// get parcels
-$parcels = $client->getParcels();
+// get parcels, optional add delivered param (true/false) to get only parcels that are (not) delivered, ommit param to get all parcels
+$parcels = $client->getParcels([
+    'delivered' => false
+]);
 
 // get webhook events
 $webhookEvents = $client->getWebhookEvents();
