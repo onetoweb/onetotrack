@@ -31,7 +31,15 @@ $providerCredential = $client->createProviderCredential([
     'provider'   => $provider['id'],
     'api_key'    => 'test_api_key',
     'api_secret' => 'test_api_secret',
+    'username'   => 'username',
+    'password'   => 'password',
+    'params'     => [
+        'foo' => 'bar'
+    ]
 ]);
+
+// update provider credentials
+$providerCredentials = $client->updateProviderCredential($providerCredential['id'], $providerCredential);
 
 // get provider credentials
 $providerCredentials = $client->getProviderCredentials();
@@ -51,6 +59,50 @@ $parcels = $client->getParcels([
     'delivered' => false
 ]);
 
+// create shipment 
+$shipment = $client->createParcel([
+    'provider_credential' => $providerCredential['id'],
+    'weight' => 10,
+    'length' => 10,
+    'width' => 10,
+    'height' => 10,
+    'reference' => 'reference',
+    'carrier' => 'carrier',
+    'type' => 'type',
+    'reciever' => [
+        'name1' => 'name 1', // used as address contact where applicable
+        'name2' => 'name 2', // used for company name where applicable
+        'name3' => 'name 3',
+        'street' => 'street',
+        'number' => '1',
+        'numberExtension' => '',
+        'postalcode' => '1000AA',
+        'city' => 'city',
+        'country' => 'NL',
+        'email' => 'info@example.com',
+        'phone' => '0123456789',
+    ],
+    'sender' => [
+        'name1' => 'name 1', // used as address contact where applicable
+        'name2' => 'name 2', // used for company name where applicable
+        'name3' => 'name 3',
+        'street' => 'street',
+        'number' => '1',
+        'numberExtension' => '',
+        'postalcode' => '1000AA',
+        'city' => 'city',
+        'country' => 'NL',
+        'email' => 'info@example.com',
+        'phone' => '0123456789',
+    ],
+]);
+
+// get shipment
+$shipment = $client->getShipments($shipment['id']);
+
+// get shipments
+$shipments = $client->createShipment();
+
 // get webhook events
 $webhookEvents = $client->getWebhookEvents();
 
@@ -64,10 +116,13 @@ $webhook = $client->createWebhook([
 $webhooks = $client->getWebhooks();
 
 // delete account
-// $this->deleteAccount($account['id']);
+// $client->deleteAccount($account['id']);
 
 // delete parcel
 // $client->deleteParcel($parcel['id']);
+
+// delete shipment
+// $client->deleteShipment($shipment['id']);
 
 // delete provider credential
 // $client->deleteProviderCredential($providerCredential['id']);

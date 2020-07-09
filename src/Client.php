@@ -6,13 +6,15 @@ use GuzzleHttp\Client as GuzzleClient;
 use GuzzleHttp\RequestOptions;
 use GuzzleHttp\Exception\RequestException as GuzzleRequestException;
 use Onetoweb\Onetotrack\Exception\{AuthenticationException, RequestException, AccountIdNotSetException};
+use Psr\Http\Message\ResponseInterface;
 
 /**
- * Onetotrack api Client
+ * Onetotrack Api Client
  * 
  * @author Jonathan van 't Ende <jvantende@onetoweb.nl>
  * @copyright Onetoweb B.V.
  * @link https://onetotrack.nujob.nl/api/doc/
+ * @version 1.1.0
  */
 class Client
 {
@@ -52,6 +54,11 @@ class Client
      * @var string
      */
     private $accountId;
+    
+    /**
+     * @var ResponseInterface
+     */
+    private $lastResponse;
     
     /**
      * @param string $username
@@ -144,6 +151,11 @@ class Client
             
         } catch (GuzzleRequestException $guzzleRequestException) {
             
+            // store last repsonse
+            if ($guzzleRequestException->hasResponse()) {
+                $this->lastResponse = $guzzleRequestException->getResponse();
+            }
+            
             $this->handleGuzzleRequestException($guzzleRequestException, function($message, $code, $previousException) {
                 throw new AuthenticationException($message, $code, $previousException);
             });
@@ -154,7 +166,7 @@ class Client
     /**
      * Send request
      *
-     * @param string $method = 'GET'
+     * @param string $method = 'GET' (optional)
      * @param string $endpoint
      * @param array $data = [] (optional)
      * @param array $query = [] (optional)
@@ -196,11 +208,26 @@ class Client
             
         } catch (GuzzleRequestException $guzzleRequestException) {
             
+            // store last repsonse
+            if ($guzzleRequestException->hasResponse()) {
+                $this->lastResponse = $guzzleRequestException->getResponse();
+            }
+            
             $this->handleGuzzleRequestException($guzzleRequestException, function($message, $code, $previousException) {
                 throw new RequestException($message, $code, $previousException);
             });
             
         }
+    }
+    
+    /**
+     * Get last response
+     * 
+     * @return ResponseInterface 
+     */
+    public function getLastResponse(): ?ResponseInterface
+    {
+        return $this->lastResponse;
     }
     
     /**
@@ -215,7 +242,48 @@ class Client
             
             $exception = json_decode($guzzleRequestException->getResponse()->getBody()->getContents(), true);
             
-            if (isset($exception['message']) and isset($exception['code'])) {
+            if (isset($exception['errors']['children'])) {
+                
+                $errors = [];
+                if ($exception['message'] != '') {
+                    $errors['error'] = $exception['message'];
+                }
+                
+                if (isset($exception['errors']['errors']) and count($exception['errors']['errors']) > 0) {
+                    $errors['errors'] = $exception['errors']['errors'];
+                }
+                
+                $createFormErrorMessage = function($form, $fieldPrefix = null) use (&$errors, &$createFormErrorMessage) {
+                    
+                    foreach ($form  as $field => $data) {
+                        
+                        if (isset($data['errors'])) {
+                            
+                            foreach ($data['errors'] as $errorMessage) {
+                                
+                                if ($fieldPrefix !== null) {
+                                    $key = "$fieldPrefix.$field";
+                                } else {
+                                    $key = $field;
+                                }
+                                
+                                $errors[$key][] = $errorMessage;
+                            }
+                        }
+                        
+                        if (isset($data['children'])) {
+                            $createFormErrorMessage($data['children'], $field);
+                        }
+                    }
+                    
+                };
+                
+                $createFormErrorMessage($exception['errors']['children']);
+                
+                $message = json_encode($errors);
+                $code = $guzzleRequestException->getCode();
+                
+            } elseif (isset($exception['message']) and isset($exception['code'])) {
                 
                 $message = $exception['message'];
                 $code = $exception['code'];
@@ -246,7 +314,7 @@ class Client
      * Send a GET request
      *
      * @param string $endpoint
-     * @param array $data = []
+     * @param array $query = []
      *
      * @return array
      */
@@ -260,6 +328,7 @@ class Client
      *
      * @param string $endpoint
      * @param array $data
+     * @param array $query = []
      *
      * @return array
      */
@@ -273,6 +342,7 @@ class Client
      *
      * @param string $endpoint
      * @param array $data
+     * @param array $query = []
      *
      * @return array
      */
@@ -282,9 +352,24 @@ class Client
     }
     
     /**
+     * Send a PATCH request
+     *
+     * @param string $endpoint
+     * @param array $data
+     * @param array $query = [] 
+     *
+     * @return array
+     */
+    public function patch(string $endpoint, array $data, array $query = [])
+    {
+        return $this->request('PATCH', $endpoint, $data, $query);
+    }
+    
+    /**
      * Send a DELETE request
      *
      * @param string $endpoint
+     * @param array $query = []
      *
      * @return array
      */
@@ -345,6 +430,17 @@ class Client
         return $this->get("api/account/$accountId/provider/credential");
     }
     
+    /**
+     * Get provider credentials
+     *
+     * @return array
+     */
+    public function getProviderCredential(string $id)
+    {
+        $accountId = $this->getAccountId();
+        
+        return $this->get("api/account/$accountId/provider/credential/$id");
+    }
     
     /**
      * Create provider credential
@@ -358,6 +454,21 @@ class Client
         $accountId = $this->getAccountId();
         
         return $this->post("api/account/$accountId/provider/credential", $data);
+    }
+    
+    /**
+     * Update provider credential
+     *
+     * @param string $id
+     * @param array $data
+     *
+     * @return array
+     */
+    public function updateProviderCredential(string $id, array $data)
+    {
+        $accountId = $this->getAccountId();
+        
+        return $this->patch("api/account/$accountId/provider/credential/$id", $data);
     }
     
     /**
@@ -428,6 +539,63 @@ class Client
         $accountId = $this->getAccountId();
         
         return $this->delete("api/account/$accountId/parcel/$id");
+    }
+    
+    
+    /**
+     * Get shipments
+     *
+     * @param array $query = [] (optional)
+     *
+     * @return array
+     */
+    public function getShipments(array $query = [])
+    {
+        $accountId = $this->getAccountId();
+        
+        return $this->get("api/account/$accountId/shipment", $query);
+    }
+    
+    /**
+     * Get shipment
+     *
+     * @param string $id
+     *
+     * @return array
+     */
+    public function getShipment(string $id)
+    {
+        $accountId = $this->getAccountId();
+        
+        return $this->get("api/account/$accountId/shipment/$id");
+    }
+    
+    /**
+     * Create shipment
+     *
+     * @param array $data
+     *
+     * @return array
+     */
+    public function createShipment(array $data)
+    {
+        $accountId = $this->getAccountId();
+        
+        return $this->post("api/account/$accountId/shipment", $data);
+    }
+    
+    /**
+     * Delete shipment
+     *
+     * @param array $id
+     *
+     * @return array
+     */
+    public function deleteShipment(string $id)
+    {
+        $accountId = $this->getAccountId();
+        
+        return $this->delete("api/account/$accountId/shipment/$id");
     }
     
     /**
