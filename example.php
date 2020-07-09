@@ -28,12 +28,12 @@ $provider = $providers[0];
 
 // create provider credentials
 $providerCredential = $client->createProviderCredential([
-    'provider'   => $provider['id'],
-    'api_key'    => 'test_api_key',
+    'provider' => $provider['id'],
+    'api_key' => 'test_api_key',
     'api_secret' => 'test_api_secret',
-    'username'   => 'username',
-    'password'   => 'password',
-    'params'     => [
+    'username' => 'username',
+    'password' => 'password',
+    'params' => [
         'foo' => 'bar'
     ]
 ]);
@@ -46,9 +46,9 @@ $providerCredentials = $client->getProviderCredentials();
 
 // create parcel
 $parcel = $client->createParcel([
-    'provider_credential'   => $providerCredential['id'],
-    'tracking_id'           => 'S10000000000000',
-    'postalcode'            => '1000AA',
+    'provider_credential' => $providerCredential['id'],
+    'tracking_id' => 'S10000000000000',
+    'postalcode' => '1000AA',
 ]);
 
 // get parcel
@@ -60,7 +60,7 @@ $parcels = $client->getParcels([
 ]);
 
 // create shipment 
-$shipment = $client->createParcel([
+$shipment = $client->createShipment([
     'provider_credential' => $providerCredential['id'],
     'weight' => 10,
     'length' => 10,
@@ -75,7 +75,7 @@ $shipment = $client->createParcel([
         'name3' => 'name 3',
         'street' => 'street',
         'number' => '1',
-        'numberExtension' => '',
+        'number_extension' => '',
         'postalcode' => '1000AA',
         'city' => 'city',
         'country' => 'NL',
@@ -88,7 +88,7 @@ $shipment = $client->createParcel([
         'name3' => 'name 3',
         'street' => 'street',
         'number' => '1',
-        'numberExtension' => '',
+        'number_extension' => '',
         'postalcode' => '1000AA',
         'city' => 'city',
         'country' => 'NL',
