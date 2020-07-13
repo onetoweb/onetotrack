@@ -14,7 +14,7 @@ use Psr\Http\Message\ResponseInterface;
  * @author Jonathan van 't Ende <jvantende@onetoweb.nl>
  * @copyright Onetoweb B.V.
  * @link https://onetotrack.nujob.nl/api/doc/
- * @version 1.1.0
+ * @version 1.1.2
  */
 class Client
 {
@@ -574,14 +574,15 @@ class Client
      * Create shipment
      *
      * @param array $data
+     * @param array $query
      *
      * @return array
      */
-    public function createShipment(array $data)
+    public function createShipment(array $data, array $query = [])
     {
         $accountId = $this->getAccountId();
         
-        return $this->post("api/account/$accountId/shipment", $data);
+        return $this->post("api/account/$accountId/shipment", $data, $query);
     }
     
     /**

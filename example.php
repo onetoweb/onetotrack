@@ -95,6 +95,8 @@ $shipment = $client->createShipment([
         'email' => 'info@example.com',
         'phone' => '0123456789',
     ],
+], [
+    'create_tracker' => true,
 ]);
 
 // get shipment
