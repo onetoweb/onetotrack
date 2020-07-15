@@ -99,11 +99,11 @@ $shipment = $client->createShipment([
     'create_tracker' => true,
 ]);
 
-// get shipment
-$shipment = $client->getShipments($shipment['id']);
-
 // get shipments
-$shipments = $client->createShipment();
+$shipments = $client->getShipments();
+
+// get shipment
+$shipment = $client->getShipment($shipment['id']);
 
 // get webhook events
 $webhookEvents = $client->getWebhookEvents();
