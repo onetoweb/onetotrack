@@ -54,9 +54,15 @@ $parcel = $client->createParcel([
 // get parcel
 $parcel = $client->getParcel($parcel['id']);
 
-// get parcels, optional add delivered param (true/false) to get only parcels that are (not) delivered, ommit param to get all parcels
+// get parcels
 $parcels = $client->getParcels([
-    'delivered' => false
+    'page' => 1,
+    'order_by' => [
+        'created_at' => 'desc',
+    ],
+    'filter' => [
+        'delivered' => true,
+    ],
 ]);
 
 // create shipment 
@@ -100,7 +106,15 @@ $shipment = $client->createShipment([
 ]);
 
 // get shipments
-$shipments = $client->getShipments();
+$shipments = $client->getShipments([
+    'page' => 1,
+    'order_by' => [
+        'created_at' => 'desc',
+    ],
+    'filter' => [
+        'created' => true,
+    ],
+]);
 
 // get shipment
 $shipment = $client->getShipment($shipment['id']);
