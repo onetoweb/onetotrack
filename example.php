@@ -38,6 +38,9 @@ $providerCredential = $client->createProviderCredential([
     ]
 ]);
 
+// get provider credential
+$providerCredential = $client->getProviderCredential($providerCredential['id']);
+
 // update provider credentials
 $providerCredentials = $client->updateProviderCredential($providerCredential['id'], $providerCredential);
 
