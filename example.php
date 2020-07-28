@@ -47,6 +47,14 @@ $providerCredentials = $client->updateProviderCredential($providerCredential['id
 // get provider credentials
 $providerCredentials = $client->getProviderCredentials();
 
+// get pickup locations
+$pickupLocations = $client->getPickupLocations([
+    'provider_credential' => $providerCredential['id'],
+    'postalcode' => '1000AA',
+    'street' => 'street',
+    'number' => 1,
+]);
+
 // create parcel
 $parcel = $client->createParcel([
     'provider_credential' => $providerCredential['id'],

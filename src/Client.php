@@ -486,6 +486,21 @@ class Client
     }
     
     /**
+     * Get pickup locations
+     *
+     * @param array $data
+     * @param array $query = [] (optional)
+     *
+     * @return array
+     */
+    public function getPickupLocations(array $data, array $query = [])
+    {
+        $accountId = $this->getAccountId();
+        
+        return $this->post("api/account/$accountId/pickup/location", $data, $query);
+    }
+    
+    /**
      * Get parcels
      * 
      * @param array $query = [] (optional)
@@ -540,7 +555,6 @@ class Client
         
         return $this->delete("api/account/$accountId/parcel/$id");
     }
-    
     
     /**
      * Get shipments
