@@ -14,7 +14,7 @@ use Psr\Http\Message\ResponseInterface;
  * @author Jonathan van 't Ende <jvantende@onetoweb.nl>
  * @copyright Onetoweb B.V.
  * @link https://onetotrack.nujob.nl/api/doc/
- * @version 1.1.2
+ * @version 1.1.8
  */
 class Client
 {
@@ -166,7 +166,7 @@ class Client
     /**
      * Send request
      *
-     * @param string $method = 'GET' (optional)
+     * @param string $method
      * @param string $endpoint
      * @param array $data = [] (optional)
      * @param array $query = [] (optional)
@@ -175,7 +175,7 @@ class Client
      *
      * @return array
      */
-    private function request(string $method = 'GET', string $endpoint, array $data = null, array $query = [])
+    private function request(string $method, string $endpoint, array $data = null, array $query = [])
     {
         if ($this->getToken() == null or $this->getToken()->hasExpired()) {
             $this->getAccessToken();
